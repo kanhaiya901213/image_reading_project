@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}YOLO Object Counter{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark">YOLO</span>
+          <div>
+            <strong>Object Counter</strong>
+            <p>Upload an image and count objects instantly.</p>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <a class="button button-ghost" href="/">Home</a>
+        </div>
+      </header>
+
+      <main class="container">
+        {% block content %}{% endblock %}
+      </main>
+
+      <footer class="footer">
+        <p>Built with Flask + YOLOv8 · Uploaded images are saved in <code>static/uploads</code>.</p>
+      </footer>
+    </div>
+  </body>
+</html>

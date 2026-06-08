@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block title %}Analysis Result | Object Counter{% endblock %}
+
+{% block content %}
+<div class="result-grid">
+  <section class="result-card">
+    <div class="result-header">
+      <h1>Analysis Result</h1>
+      <div class="result-meta">
+        <span class="badge">Total: {{ total }}</span>
+        {% if people_only %}<span class="tag">People only</span>{% endif %}
+        <span class="meta-note">Completed in {{ elapsed_ms }} ms</span>
+      </div>
+    </div>
+
+    <div class="stats-grid">
+      {% if counts %}
+        {% for name, cnt in counts.items() %}
+          <div class="stat-row">
+            <div>
+              <div class="stat-title">{{ name }}</div>
+              <div class="meta-note">Detected: {{ cnt }}</div>
+            </div>
+            <div class="progress-bar" aria-hidden="true">
+              <div class="progress-fill" style="width: {{ 0 if total == 0 else (cnt * 100 / total) }}%;"></div>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="stat-row">
+          <div class="stat-title">No objects detected</div>
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="card">
+      <img src="{{ image_url }}" alt="Annotated image">
+    </div>
+
+    <a class="button button-primary" href="/">Analyze another image</a>
+  </section>
+</div>
+{% endblock %}

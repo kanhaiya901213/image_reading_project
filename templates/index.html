@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Image | Object Counter{% endblock %}
+
+{% block content %}
+<div class="hero">
+  <div class="hero-copy">
+    <h1>Smart image analysis with YOLOv8</h1>
+    <p>Upload any photo and get fast object detection, labeled annotations, and count summaries. Use the people-only filter to focus on human detection.</p>
+
+    <div class="feature-list">
+      <div class="feature-item">Live image annotation with bounding boxes</div>
+      <div class="feature-item">Object counts by class in one result page</div>
+      <div class="feature-item">Supports PNG, JPG, JPEG, GIF, BMP, AVIF</div>
+    </div>
+  </div>
+
+  <div class="hero-card">
+    <h2>Upload your image</h2>
+    <form method="post" action="/upload" enctype="multipart/form-data">
+      <div class="field-group">
+        <label>
+          <span>Choose image file</span>
+          <input type="file" name="file" accept="image/*" required>
+        </label>
+      </div>
+
+      <label class="checkbox-row">
+        <input type="checkbox" name="people_only">
+        <span>Only count people</span>
+      </label>
+
+      <button class="button button-primary" type="submit">Upload & Analyze</button>
+    </form>
+
+    <p class="support-text">Supported formats: {{ supported_formats | join(', ') }}</p>
+  </div>
+</div>
+
+{% if recent_uploads %}
+<section class="recent-card card">
+  <h3>Recent uploads</h3>
+  <ul class="recent-list">
+    {% for item in recent_uploads %}
+      <li>
+        <div><strong>{{ item.filename }}</strong></div>
+        <div class="meta-note">Total detected: {{ item.total }}</div>
+        <div><a class="recent-link" href="{{ item.image_url }}" target="_blank">View annotated image</a></div>
+      </li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{% endblock %}
