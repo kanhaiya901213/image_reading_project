@@ -2,13 +2,72 @@ from flask import Flask, render_template, request, redirect, url_for
 import os
 from time import perf_counter
 from werkzeug.utils import secure_filename
+from collections import defaultdict
+import cv2
+from ultralytics import YOLO
 
-from main import detect_image
+# Load YOLO model once at startup
+model = YOLO("yolov8n.pt")
 
 UPLOAD_FOLDER = os.path.join('static', 'uploads')
 ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'gif', 'bmp', 'avif'}
 UPLOAD_HISTORY_LIMIT = 5
 upload_history = []
+
+
+def detect_image(image_path, save_path=None, people_only=False):
+    image = cv2.imread(image_path)
+    if image is None:
+        raise FileNotFoundError(f"Image not found: {image_path}")
+
+    results = model(image)
+
+    counts = defaultdict(int)
+    annotated = image.copy()
+    names = {}
+    try:
+        names = model.names
+    except Exception:
+        try:
+            names = results[0].names
+        except Exception:
+            names = {}
+
+    for r in results:
+        for box in r.boxes:
+            cls = int(box.cls[0])
+            if people_only and cls != 0:
+                continue
+            name = names.get(cls, str(cls))
+            counts[name] += 1
+            x1, y1, x2, y2 = map(int, box.xyxy[0])
+            cv2.rectangle(annotated, (x1, y1), (x2, y2), (0, 255, 0), 2)
+            cv2.putText(annotated,
+                        f"{counts[name]} {name}",
+                        (x1, max(y1 - 10, 0)),
+                        cv2.FONT_HERSHEY_SIMPLEX,
+                        0.8,
+                        (0, 0, 255),
+                        2)
+
+    total = sum(counts.values())
+    cv2.putText(annotated,
+                f"Total: {total}",
+                (20, 50),
+                cv2.FONT_HERSHEY_SIMPLEX,
+                1,
+                (255, 0, 0),
+                2)
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path) or '.', exist_ok=True)
+        try:
+            annotated_resized = cv2.resize(annotated, (900, 600))
+        except Exception:
+            annotated_resized = annotated
+        cv2.imwrite(save_path, annotated_resized)
+
+    return dict(counts), total, annotated
 
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -65,6 +124,7 @@ def upload():
             elapsed_ms=elapsed_ms,
         )
     return redirect(url_for('index'))
+
 
 
 app.run(
